@@ -15,6 +15,9 @@
  */
 package ls.demon.netkit.nio;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,8 +25,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
 public final class RelayHandler extends ChannelInboundHandlerAdapter {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(RelayHandler.class);
 
-    private final Channel relayChannel;
+    private final Channel       relayChannel;
 
     public RelayHandler(Channel relayChannel) {
         this.relayChannel = relayChannel;
@@ -45,6 +52,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        logger.info("channelInactive");
         if (relayChannel.isActive()) {
             SocksServerUtils.closeOnFlush(relayChannel);
         }
@@ -52,7 +60,8 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        //        cause.printStackTrace();
+        logger.error("", cause);
         ctx.close();
     }
 }

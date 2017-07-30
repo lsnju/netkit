@@ -15,6 +15,9 @@
  */
 package ls.demon.netkit.nio;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -37,12 +40,18 @@ import io.netty.util.concurrent.Promise;
 
 @ChannelHandler.Sharable
 public final class SocksServerConnectHandler extends SimpleChannelInboundHandler<SocksMessage> {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(SocksServerConnectHandler.class);
 
-    private final Bootstrap b = new Bootstrap();
+    private final Bootstrap     b      = new Bootstrap();
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx,
                              final SocksMessage message) throws Exception {
+
+        logger.info("channelRead0 = {}", message);
         if (message instanceof Socks4CommandRequest) {
             final Socks4CommandRequest request = (Socks4CommandRequest) message;
             Promise<Channel> promise = ctx.executor().newPromise();
@@ -90,6 +99,8 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
                     }
                 });
         } else if (message instanceof Socks5CommandRequest) {
+            logger.info("s5:cmd_req");
+
             final Socks5CommandRequest request = (Socks5CommandRequest) message;
             Promise<Channel> promise = ctx.executor().newPromise();
             promise.addListener(new FutureListener<Channel>() {
@@ -97,6 +108,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
                 public void operationComplete(final Future<Channel> future) throws Exception {
                     final Channel outboundChannel = future.getNow();
                     if (future.isSuccess()) {
+                        logger.info("write conn success");
                         ChannelFuture responseFuture = ctx.channel().writeAndFlush(
                             new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS,
                                 request.dstAddrType(), request.dstAddr(), request.dstPort()));
@@ -104,6 +116,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
                         responseFuture.addListener(new ChannelFutureListener() {
                             @Override
                             public void operationComplete(ChannelFuture channelFuture) {
+                                logger.info("set channel to relayHander");
                                 ctx.pipeline().remove(SocksServerConnectHandler.this);
                                 outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
                                 ctx.pipeline().addLast(new RelayHandler(outboundChannel));
