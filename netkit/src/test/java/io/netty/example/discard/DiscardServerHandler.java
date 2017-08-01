@@ -15,6 +15,9 @@
  */
 package io.netty.example.discard;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -22,10 +25,15 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * Handles a server-side channel.
  */
 public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(DiscardServerHandler.class);
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         // discard
+        logger.info("{}", msg);
     }
 
     @Override

@@ -26,7 +26,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
-    private ByteBuf content;
+    private ByteBuf               content;
     private ChannelHandlerContext ctx;
 
     @Override

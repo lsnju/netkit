@@ -13,8 +13,9 @@
 
 	<logger name="ls" level="debug" />
 	<logger name="jersey.CLIENT" level="debug" />
+	<logger name="io" level="info" />
 
-	<root level="debug">
+	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>
