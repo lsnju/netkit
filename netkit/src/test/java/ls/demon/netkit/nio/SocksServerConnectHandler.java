@@ -37,6 +37,7 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
+import ls.demon.netkit.util.PipeUtils;
 
 @ChannelHandler.Sharable
 public final class SocksServerConnectHandler extends SimpleChannelInboundHandler<SocksMessage> {
@@ -101,6 +102,9 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
         } else if (message instanceof Socks5CommandRequest) {
             logger.info("s5:cmd_req");
 
+            // 
+            PipeUtils.showAll("s5:cmd_req", ctx.pipeline());
+
             final Socks5CommandRequest request = (Socks5CommandRequest) message;
             Promise<Channel> promise = ctx.executor().newPromise();
             promise.addListener(new FutureListener<Channel>() {
@@ -116,10 +120,16 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
                         responseFuture.addListener(new ChannelFutureListener() {
                             @Override
                             public void operationComplete(ChannelFuture channelFuture) {
-                                logger.info("set channel to relayHander");
+                                logger.info("set channel to relayHander {}",
+                                    ctx.pipeline().hashCode());
+                                // 
+                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
+
                                 ctx.pipeline().remove(SocksServerConnectHandler.this);
                                 outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
                                 ctx.pipeline().addLast(new RelayHandler(outboundChannel));
+                                // 
+                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
                             }
                         });
                     } else {

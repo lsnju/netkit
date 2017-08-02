@@ -23,6 +23,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
+import ls.demon.netkit.util.PipeUtils;
 
 public final class RelayHandler extends ChannelInboundHandlerAdapter {
     /**
@@ -43,6 +44,8 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        logger.info("{}, {}", ctx, msg);
+        PipeUtils.showAll("" + ctx.hashCode(), ctx.pipeline());
         if (relayChannel.isActive()) {
             relayChannel.writeAndFlush(msg);
         } else {

@@ -15,16 +15,29 @@
  */
 package ls.demon.netkit.nio;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.socksx.SocksPortUnificationServerHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import ls.demon.netkit.util.PipeUtils;
 
 public final class SocksServerInitializer extends ChannelInitializer<SocketChannel> {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(SocksServerInitializer.class);
+
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
+        logger.info("ch={}", ch);
+        logger.info("ch.pipe={}", ch.pipeline().hashCode());
         ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG),
             new SocksPortUnificationServerHandler(), SocksServerHandler.INSTANCE);
+
+        PipeUtils.showAll(ch.pipeline());
     }
 }
