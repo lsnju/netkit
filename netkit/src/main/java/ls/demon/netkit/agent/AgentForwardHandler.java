@@ -18,6 +18,7 @@ import io.netty.handler.codec.socksx.v4.Socks4ServerDecoder;
 import io.netty.handler.codec.socksx.v4.Socks4ServerEncoder;
 import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
+import ls.demon.netkit.agent.socks.AgentSocksHandler;
 
 /**
  * 
@@ -68,33 +69,35 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
         switch (version) {
             case SOCKS4a:
                 logKnownVersion(ctx, version);
+                p.addAfter(ctx.name(), null, AgentSocksHandler.INSTANCE);
                 p.addAfter(ctx.name(), null, Socks4ServerEncoder.INSTANCE);
                 p.addAfter(ctx.name(), null, new Socks4ServerDecoder());
-                break;
+                p.remove(this);
+                return;
             case SOCKS5:
+                p.addAfter(ctx.name(), null, AgentSocksHandler.INSTANCE);
                 logKnownVersion(ctx, version);
                 p.addAfter(ctx.name(), null, socks5encoder);
                 p.addAfter(ctx.name(), null, new Socks5InitialRequestDecoder());
-                break;
+                p.remove(this);
+                return;
             default:
                 logUnknownVersion(ctx, versionVal);
 
-                // GEY POST CONNECT 
-                if (in.writerIndex() - readerIndex > 6) {
+                switch (versionVal) {
+                    case 'C':
+                    case 'c':
+                    case 'P':
+                    case 'p':
 
+                        p.remove(this);
+                        return;
+                    default:
+                        in.skipBytes(in.readableBytes());
+                        ctx.close();
+                        return;
                 }
-
-                in.skipBytes(in.readableBytes());
-                ctx.close();
-                return;
         }
-
-        p.remove(this);
-    }
-
-    private String getFirstLineStr(ByteBuf in) {
-        final int readerIndex = in.readerIndex();
-        return "";
     }
 
     private static void logKnownVersion(ChannelHandlerContext ctx, SocksVersion version) {

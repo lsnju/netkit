@@ -17,11 +17,11 @@ import io.netty.handler.logging.LoggingHandler;
  * @author song.li@witontek.com
  * @version $Id: AgentSocksServerInitializer.java, v 0.1 2017年8月2日 上午8:37:31 song.li@witontek.com Exp $
  */
-public class SocksAgentInitializer extends ChannelInitializer<SocketChannel> {
+public class ProxyAgentInitializer extends ChannelInitializer<SocketChannel> {
     /**
     * Logger for this class
     */
-    private static final Logger logger = LoggerFactory.getLogger(SocksAgentInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProxyAgentInitializer.class);
 
     /** 
      * @see io.netty.channel.ChannelInitializer#initChannel(io.netty.channel.Channel)
@@ -30,7 +30,7 @@ public class SocksAgentInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         logger.info("ch={}", ch);
         logger.info("ch.pipe={}", ch.pipeline());
-        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG), new AgentForwardHandler());
     }
 
 }
