@@ -231,13 +231,13 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                         ctx.pipeline().addLast(new RelayHandler(outboundChannel));
                         ctx.pipeline().remove(AgentForwardHandler.this);
                         logger.info("{}", rb);
-                        logger.info("==============================={}", ctx.channel());
+                        logger.info("=={} {}", ctx.channel(), outboundChannel);
                     } else {
-                        logger.info("-------------------------------{}", ctx.channel());
+                        logger.info("--{} {}", ctx.channel(), outboundChannel);
                         logger.info("\n{}", PipeUtils.toStr(ctx.pipeline()));
                         // logger.info("\n{}", PipeUtils.toStr(outboundChannel.pipeline()));
                         logger.info("{}", rb);
-                        logger.info("-------------------------------{}", outboundChannel);
+                        logger.info("-------------------------------");
                     }
                     ctx.fireChannelRead(rb);
 
