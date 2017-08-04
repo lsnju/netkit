@@ -32,6 +32,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import ls.demon.netkit.agent.socks.AgentSocksHandler;
+import ls.demon.netkit.util.PipeUtils;
 import ls.demon.netkit.util.SocksServerUtils;
 
 /**
@@ -46,6 +47,8 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
     private static final Logger       logger = LoggerFactory.getLogger(AgentForwardHandler.class);
 
     private final Socks5ServerEncoder socks5encoder;
+
+    private final Bootstrap           b      = new Bootstrap();
 
     /**
      * 
@@ -104,7 +107,7 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
         if (line == null) {
             return;
         }
-        logger.info("{}", line);
+        logger.info("{} {} {}", line, ctx.channel(), in);
 
         String[] items = StringUtils.split(line, ' ');
         if (items.length != 3) {
@@ -150,20 +153,28 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                     responseFuture.addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
-                            outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
-                            ctx.pipeline().remove(AgentForwardHandler.this);
-                            ctx.pipeline().addLast(new RelayHandler(outboundChannel));
+
+                            if (ctx.pipeline().get(AgentForwardHandler.class) != null) {
+                                ctx.pipeline().remove(AgentForwardHandler.this);
+                                outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
+                                ctx.pipeline().addLast(new RelayHandler(outboundChannel));
+                            } else {
+                                logger.info("-------------------------------");
+                                logger.info("\n{}", PipeUtils.toStr(ctx.pipeline()));
+                                logger.info("\n{}", PipeUtils.toStr(outboundChannel.pipeline()));
+                                logger.info("-------------------------------");
+                            }
                         }
                     });
                 } else {
-                    logger.info("https代理外部连接已建立失败 {}", outboundChannel);
+                    logger.info("https代理外部连接建立失败 {}", outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
 
             }
         });
 
-        Bootstrap b = new Bootstrap();
+        //        Bootstrap b = new Bootstrap();
         final Channel inboundChannel = ctx.channel();
         b.group(inboundChannel.eventLoop()).channel(NioSocketChannel.class)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
@@ -174,10 +185,10 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
-                    logger.info("https代理外部连接已建立 {}", future.channel());
+                    // logger.info("https代理外部连接已建立 {}", future.channel());
                 } else {
                     // Close the connection if the connection attempt has failed.
-                    logger.info("https代理外部连接已建立失败 {}", future.channel());
+                    logger.info("https代理外部连接建立失败 {}", future.channel());
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
             }
@@ -204,7 +215,8 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
         String[] hp = StringUtils.split(hostInfo, ':');
         String host = hp[0];
         int port = hp.length == 2 ? Integer.parseInt(hp[1]) : 80;
-        logger.info("hostInfo = {}", hostInfo);
+        ByteBuf rb = Unpooled.copiedBuffer(in);
+        logger.info("hostInfo = {} {}", hostInfo, rb);
 
         Promise<Channel> promise = ctx.executor().newPromise();
         promise.addListener(new FutureListener<Channel>() {
@@ -214,14 +226,24 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
 
                 if (future.isSuccess()) {
                     logger.info("http代理外部连接已建立 {}", outboundChannel);
+                    if (ctx.pipeline().get(AgentForwardHandler.class) != null) {
+                        outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
+                        ctx.pipeline().addLast(new RelayHandler(outboundChannel));
+                        ctx.pipeline().remove(AgentForwardHandler.this);
+                        logger.info("{}", rb);
+                        logger.info("==============================={}", ctx.channel());
+                    } else {
+                        logger.info("-------------------------------{}", ctx.channel());
+                        logger.info("\n{}", PipeUtils.toStr(ctx.pipeline()));
+                        // logger.info("\n{}", PipeUtils.toStr(outboundChannel.pipeline()));
+                        logger.info("{}", rb);
+                        logger.info("-------------------------------{}", outboundChannel);
+                    }
+                    ctx.fireChannelRead(rb);
 
-                    outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
-                    ctx.pipeline().remove(AgentForwardHandler.this);
-                    ctx.pipeline().addLast(new RelayHandler(outboundChannel));
-
-                    logger.info("http代理外部连接已建立-over {}", outboundChannel);
+                    // logger.info("http代理外部连接已建立-over {}", outboundChannel);
                 } else {
-                    logger.info("http代理外部连接已建立失败 {}", outboundChannel);
+                    logger.info("http代理外部连接建立失败 {}", outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
 
@@ -239,12 +261,12 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
-                    logger.info("http代理外部连接已建立 {}", future.channel());
+                    // logger.info("http代理外部连接已建立 {}", future.channel());
                     // https://stackoverflow.com/questions/41556208/io-netty-util-illegalreferencecountexception-refcnt-0-in-netty
-                    future.channel().writeAndFlush(in.retain());
+                    // future.channel().writeAndFlush(in.retain());
                 } else {
                     // Close the connection if the connection attempt has failed.
-                    logger.info("http代理外部连接已建立失败 {}", future.channel());
+                    logger.info("http代理外部连接建立失败 {}", future.channel());
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
             }

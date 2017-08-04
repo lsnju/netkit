@@ -39,4 +39,12 @@ public class PipeUtils {
         logger.debug("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-{}-end.{}", name, pipeline.hashCode());
     }
 
+    public static String toStr(ChannelPipeline pipeline) {
+        StringBuilder sb = new StringBuilder(64);
+        for (Entry<String, ChannelHandler> e : pipeline) {
+            sb.append(e.getKey()).append(" = ").append(e.getValue()).append("\n");
+        }
+        return sb.toString();
+    }
+
 }
