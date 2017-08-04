@@ -93,7 +93,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
             public void operationComplete(Future<Channel> future) throws Exception {
                 final Channel outboundChannel = future.getNow();
                 if (future.isSuccess()) {
-                    logger.info("https代理外部连接已建立 {}", outboundChannel);
+                    // logger.info("https代理外部连接已建立 {}", outboundChannel);
 
                     ChannelFuture responseFuture = ctx.channel()
                         .writeAndFlush(SocksServerUtils.getConnectOk());
@@ -163,7 +163,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
                 final Channel outboundChannel = future.getNow();
 
                 if (future.isSuccess()) {
-                    logger.info("http代理外部连接已建立 {}", outboundChannel);
+                    // logger.info("http代理外部连接已建立 {}", outboundChannel);
 
                     ctx.pipeline().remove(HttpRequestDecoder.class);
                     ctx.pipeline().remove(HttpObjectAggregator.class);

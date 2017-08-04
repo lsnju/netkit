@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ls.demon.netkit.util.EhJerseyClient;
+import ls.demon.netkit.utils.EhJerseyClient;
 import ls.demon.netkit.utils.JdkProxyUtils;
 
 /**

@@ -2,7 +2,7 @@
  * Witontek.com.
  * Copyright (c) 2012-2016 All Rights Reserved.
  */
-package ls.demon.netkit.util;
+package ls.demon.netkit.utils;
 
 import java.util.logging.Level;
 
