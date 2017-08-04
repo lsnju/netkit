@@ -10,7 +10,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -111,6 +113,26 @@ public class ProxyClientTest {
             Client client = EhJerseyClient.getJerseyClient();
             WebTarget wt = client.target("http://cn.bing.com/");
             String resp = wt.request().get(String.class);
+            logger.info("{}", resp);
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+
+    }
+
+    @Test
+    public void test_jersy_client_http_post_proxy() {
+        logger.info("");
+        JdkProxyUtils.httpProxy(host, port);
+        //        JdkProxyUtils.httpsProxy(host, port);
+        //        JdkProxyUtils.socksProxy(host, port);
+
+        try {
+            Client client = EhJerseyClient.getJerseyClient();
+            WebTarget wt = client.target("http://cn.bing.com/");
+            Form f = new Form();
+            f.param("name", "value");
+            String resp = wt.request().post(Entity.form(f), String.class);
             logger.info("{}", resp);
         } catch (Exception e) {
             logger.error("", e);

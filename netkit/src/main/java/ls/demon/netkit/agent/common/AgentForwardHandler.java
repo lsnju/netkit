@@ -23,6 +23,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.HttpConstants;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.socksx.SocksVersion;
 import io.netty.handler.codec.socksx.v4.Socks4ServerDecoder;
 import io.netty.handler.codec.socksx.v4.Socks4ServerEncoder;
@@ -31,6 +33,7 @@ import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
+import ls.demon.netkit.agent.http.HttpRequestHandler;
 import ls.demon.netkit.agent.socks.AgentSocksHandler;
 import ls.demon.netkit.util.PipeUtils;
 import ls.demon.netkit.util.SocksServerUtils;
@@ -101,6 +104,14 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             default:
                 logUnknownVersion(ctx, versionVal);
                 break;
+        }
+
+        if (versionVal > 0) {
+            p.addAfter(ctx.name(), null, new HttpRequestHandler());
+            p.addAfter(ctx.name(), null, new HttpObjectAggregator(65536));
+            p.addAfter(ctx.name(), null, new HttpRequestDecoder());
+            p.remove(this);
+            return;
         }
 
         String line = getFirstLine(in);

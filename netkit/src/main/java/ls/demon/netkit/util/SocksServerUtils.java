@@ -18,6 +18,7 @@ package ls.demon.netkit.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -36,6 +37,10 @@ public final class SocksServerUtils {
             logger.info("关闭连接 {}", ch);
             ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
+    }
+
+    public static ByteBuf getConnectOk() {
+        return Unpooled.wrappedBuffer("HTTP/1.1 200 Connection Established\r\n\r\n".getBytes());
     }
 
     private SocksServerUtils() {
