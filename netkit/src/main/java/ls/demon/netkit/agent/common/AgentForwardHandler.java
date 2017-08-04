@@ -4,7 +4,6 @@
  */
 package ls.demon.netkit.agent.common;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -151,8 +150,8 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                     responseFuture.addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
-                            ctx.pipeline().remove(AgentForwardHandler.this);
                             outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
+                            ctx.pipeline().remove(AgentForwardHandler.this);
                             ctx.pipeline().addLast(new RelayHandler(outboundChannel));
                         }
                     });
@@ -199,22 +198,28 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
      */
     private void httpProxy(ChannelHandlerContext ctx, ByteBuf in,
                            String[] items) throws URISyntaxException {
-        URI uri = new URI(items[1]);
-        String host = uri.getHost();
-        int port = uri.getPort() != -1 ? uri.getPort() : 80;
+        String subUri = StringUtils.substring(items[1], 7);
+        String hostInfo = StringUtils.substring(subUri, 0, StringUtils.indexOf(subUri, '/'));
+
+        String[] hp = StringUtils.split(hostInfo, ':');
+        String host = hp[0];
+        int port = hp.length == 2 ? Integer.parseInt(hp[1]) : 80;
+        logger.info("hostInfo = {}", hostInfo);
 
         Promise<Channel> promise = ctx.executor().newPromise();
         promise.addListener(new FutureListener<Channel>() {
             @Override
             public void operationComplete(Future<Channel> future) throws Exception {
                 final Channel outboundChannel = future.getNow();
+
                 if (future.isSuccess()) {
                     logger.info("http代理外部连接已建立 {}", outboundChannel);
 
+                    outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
                     ctx.pipeline().remove(AgentForwardHandler.this);
                     ctx.pipeline().addLast(new RelayHandler(outboundChannel));
-                    outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
 
+                    logger.info("http代理外部连接已建立-over {}", outboundChannel);
                 } else {
                     logger.info("http代理外部连接已建立失败 {}", outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
@@ -235,7 +240,8 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
                     logger.info("http代理外部连接已建立 {}", future.channel());
-                    future.channel().writeAndFlush(in);
+                    // https://stackoverflow.com/questions/41556208/io-netty-util-illegalreferencecountexception-refcnt-0-in-netty
+                    future.channel().writeAndFlush(in.retain());
                 } else {
                     // Close the connection if the connection attempt has failed.
                     logger.info("http代理外部连接已建立失败 {}", future.channel());
@@ -243,6 +249,15 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                 }
             }
         });
+    }
+
+    /** 
+     * @see io.netty.channel.ChannelInboundHandlerAdapter#exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable)
+     */
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.warn("异常 {}", ctx.channel());
+        SocksServerUtils.closeOnFlush(ctx.channel());
     }
 
     private String getFirstLine(ByteBuf in) {
