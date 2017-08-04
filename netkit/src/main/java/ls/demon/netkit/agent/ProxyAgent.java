@@ -45,10 +45,11 @@ public class ProxyAgent {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new ProxyAgentInitializer());
 
             ChannelFuture f = b.bind(PORT).sync();
+            logger.info("listening on port {} ...", PORT);
 
             f.channel().closeFuture().sync();
         } catch (Exception e) {

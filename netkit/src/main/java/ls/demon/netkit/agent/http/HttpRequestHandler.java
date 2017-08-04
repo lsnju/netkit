@@ -50,13 +50,13 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.info("{} {}", ctx, msg.getClass());
+        logger.debug("{} {}", ctx.channel(), msg.getClass());
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest req = (FullHttpRequest) msg;
 
             logger.debug("{}", req.headers());
             logger.debug("{}", req.content());
-            logger.info("{}", req);
+            logger.debug("{}", req);
 
             HttpMethod method = req.method();
             if (method == HttpMethod.CONNECT) {
@@ -85,7 +85,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void httpsProxy(final ChannelHandlerContext ctx, final String host, final int port) {
-        logger.info("{} {} {}", ctx, host, port);
+        logger.info("httpsProxy {}:{} {}", host, port, ctx.channel());
 
         Promise<Channel> promise = ctx.executor().newPromise();
         promise.addListener(new FutureListener<Channel>() {
@@ -111,7 +111,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
                         }
                     });
                 } else {
-                    logger.info("https代理外部连接建立失败 {}", outboundChannel);
+                    logger.warn("https代理外部连接建立失败 {}:{} {}", host, port, outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
 
@@ -129,10 +129,10 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
-                    logger.info("https代理外部连接已建立 {}", future.channel());
+                    // logger.info("https代理外部连接已建立 {}", future.channel());
                 } else {
                     // Close the connection if the connection attempt has failed.
-                    logger.info("https代理外部连接建立失败 {}", future.channel());
+                    logger.warn("https代理外部连接建立失败 {}:{} {}", host, port, future.channel());
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
             }
@@ -149,7 +149,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
      */
     private void httpProxy(final ChannelHandlerContext ctx, FullHttpRequest req, final String host,
                            final int port) {
-        logger.info("{}", req.content());
+        logger.info("httpProxy {}:{} {}", host, port, ctx.channel());
         //        final ByteBuf dst = Unpooled.buffer(req.content().readableBytes());
         //        req.content().readBytes(dst);
         //        logger.info("{}", req.content());
@@ -182,7 +182,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
                     outboundChannel.writeAndFlush(xxReq);
 
                 } else {
-                    logger.info("http代理外部连接建立失败 {}", outboundChannel);
+                    logger.warn("http代理外部连接建立失败 {}:{} {}", host, port, outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
 
@@ -201,12 +201,12 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
-                    logger.info("http代理外部连接已建立 {}", future.channel());
+                    // logger.info("http代理外部连接已建立 {}", future.channel());
                     // https://stackoverflow.com/questions/41556208/io-netty-util-illegalreferencecountexception-refcnt-0-in-netty
                     // future.channel().writeAndFlush(in.retain());
                 } else {
                     // Close the connection if the connection attempt has failed.
-                    logger.info("http代理外部连接建立失败 {}", future.channel());
+                    logger.warn("http代理外部连接建立失败 {}:{} {}", host, port, future.channel());
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
             }
