@@ -15,17 +15,25 @@
  */
 package ls.demon.netkit.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 
 public final class SocksServerUtils {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(SocksServerUtils.class);
 
     /**
      * Closes the specified channel after all queued write requests are flushed.
      */
     public static void closeOnFlush(Channel ch) {
         if (ch.isActive()) {
+            logger.info("关闭连接 {}", ch);
             ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }

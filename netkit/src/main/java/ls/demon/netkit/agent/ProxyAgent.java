@@ -57,4 +57,8 @@ public class ProxyAgent {
             workerGroup.shutdownGracefully();
         }
     }
+
+    public static void main(String[] args) {
+        new ProxyAgent().start();
+    }
 }

@@ -23,7 +23,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-import ls.demon.netkit.util.PipeUtils;
 import ls.demon.netkit.util.SocksServerUtils;
 
 public final class RelayHandler extends ChannelInboundHandlerAdapter {
@@ -45,8 +44,8 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        logger.info("{}, {}", ctx, msg);
-        PipeUtils.showAll("" + ctx.hashCode(), ctx.pipeline());
+        logger.info("{}, {}", ctx.channel(), msg);
+        // PipeUtils.showAll("" + ctx.hashCode(), ctx.pipeline());
         if (relayChannel.isActive()) {
             relayChannel.writeAndFlush(msg);
         } else {
@@ -56,7 +55,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        logger.info("channelInactive");
+        logger.info("连接关闭 {}", ctx.channel());
         if (relayChannel.isActive()) {
             SocksServerUtils.closeOnFlush(relayChannel);
         }
@@ -65,7 +64,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         //        cause.printStackTrace();
-        logger.error("", cause);
+        logger.error("连接异常", cause);
         ctx.close();
     }
 }

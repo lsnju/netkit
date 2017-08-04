@@ -15,6 +15,9 @@
  */
 package io.netty.example.http.cors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -28,9 +31,16 @@ import io.netty.handler.codec.http.HttpVersion;
  * response for any request.
  */
 public class OkResponseHandler extends SimpleChannelInboundHandler<Object> {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(OkResponseHandler.class);
+
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) {
-        final FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        logger.info("msg = {}", msg);
+        final FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            HttpResponseStatus.OK);
         response.headers().set("custom-response-header", "Some value");
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }

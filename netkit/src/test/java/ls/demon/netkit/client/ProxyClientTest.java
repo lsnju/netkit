@@ -103,9 +103,9 @@ public class ProxyClientTest {
     @Test
     public void test_jersy_client_http_proxy() {
         logger.info("");
-        //        JdkProxyUtils.httpProxy(host, port);
+        JdkProxyUtils.httpProxy(host, port);
         //        JdkProxyUtils.httpsProxy(host, port);
-        JdkProxyUtils.socksProxy(host, port);
+        //        JdkProxyUtils.socksProxy(host, port);
 
         try {
             Client client = EhJerseyClient.getJerseyClient();
@@ -121,8 +121,8 @@ public class ProxyClientTest {
     @Test
     public void test_jersy_client_https_proxy() {
         logger.info("");
-        //        JdkProxyUtils.httpProxy(host, port);
-        //        JdkProxyUtils.httpsProxy(host, port);
+        JdkProxyUtils.httpProxy(host, port);
+        JdkProxyUtils.httpsProxy(host, port);
         JdkProxyUtils.socksProxy(host, port);
 
         try {

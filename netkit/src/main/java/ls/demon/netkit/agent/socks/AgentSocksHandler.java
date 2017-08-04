@@ -22,9 +22,8 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.handler.codec.socksx.v5.Socks5InitialRequest;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequest;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthStatus;
-import ls.demon.netkit.nio.SocksServerConnectHandler;
-import ls.demon.netkit.nio.SocksServerUtils;
 import ls.demon.netkit.util.PipeUtils;
+import ls.demon.netkit.util.SocksServerUtils;
 
 /**
  * 
@@ -54,7 +53,7 @@ public class AgentSocksHandler extends SimpleChannelInboundHandler<SocksMessage>
                 logger.info("s4:{}", socksRequest);
                 Socks4CommandRequest socksV4CmdRequest = (Socks4CommandRequest) socksRequest;
                 if (socksV4CmdRequest.type() == Socks4CommandType.CONNECT) {
-                    ctx.pipeline().addLast(new SocksServerConnectHandler());
+                    ctx.pipeline().addLast(new AgentSocksConnectHandler());
                     ctx.pipeline().remove(this);
                     ctx.fireChannelRead(socksRequest);
                 } else {
@@ -92,7 +91,7 @@ public class AgentSocksHandler extends SimpleChannelInboundHandler<SocksMessage>
                     PipeUtils.showAll("s5:cmd-0", ctx.pipeline());
                     Socks5CommandRequest socks5CmdRequest = (Socks5CommandRequest) socksRequest;
                     if (socks5CmdRequest.type() == Socks5CommandType.CONNECT) {
-                        ctx.pipeline().addLast(new SocksServerConnectHandler());
+                        ctx.pipeline().addLast(new AgentSocksConnectHandler());
                         ctx.pipeline().remove(this);
                         // 
                         PipeUtils.showAll("s5:cmd-1", ctx.pipeline());
