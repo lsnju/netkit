@@ -24,19 +24,19 @@ public class PipeUtils {
     private static final Logger logger = LoggerFactory.getLogger(PipeUtils.class);
 
     public static void showAll(ChannelPipeline pipeline) {
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-s");
+        logger.debug("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-s");
         for (Entry<String, ChannelHandler> e : pipeline) {
-            logger.info("{} = {}", e.getKey(), e.getValue());
+            logger.debug("{} = {}", e.getKey(), e.getValue());
         }
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-e");
+        logger.debug("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-e");
     }
 
     public static void showAll(String name, ChannelPipeline pipeline) {
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-{}-start.{}", name, pipeline.hashCode());
+        logger.debug("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-{}-start.{}", name, pipeline.hashCode());
         for (Entry<String, ChannelHandler> e : pipeline) {
-            logger.info("{} = {}", e.getKey(), e.getValue());
+            logger.debug("{} = {}", e.getKey(), e.getValue());
         }
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-{}-end.{}", name, pipeline.hashCode());
+        logger.debug("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-{}-end.{}", name, pipeline.hashCode());
     }
 
 }

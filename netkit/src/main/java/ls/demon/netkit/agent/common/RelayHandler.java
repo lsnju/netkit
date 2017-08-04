@@ -44,7 +44,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        logger.info("{}, {}", ctx.channel(), msg);
+        logger.debug("{}, {}", ctx.channel(), msg);
         // PipeUtils.showAll("" + ctx.hashCode(), ctx.pipeline());
         if (relayChannel.isActive()) {
             relayChannel.writeAndFlush(msg);
@@ -55,7 +55,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        logger.info("连接关闭 {}", ctx.channel());
+        logger.debug("连接关闭 {}", ctx.channel());
         if (relayChannel.isActive()) {
             SocksServerUtils.closeOnFlush(relayChannel);
         }
@@ -64,7 +64,7 @@ public final class RelayHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         //        cause.printStackTrace();
-        logger.error("连接异常", cause);
+        logger.warn("连接异常{}", ctx.channel());
         ctx.close();
     }
 }

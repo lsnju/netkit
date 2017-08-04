@@ -2,7 +2,7 @@
  * Witontek.com.
  * Copyright (c) 2012-2017 All Rights Reserved.
  */
-package ls.demon.netkit.agent;
+package ls.demon.netkit.agent.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +28,8 @@ public class ProxyAgentInitializer extends ChannelInitializer<SocketChannel> {
      */
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-        logger.info("ch={}", ch);
-        logger.info("ch.pipe={}", ch.pipeline());
+        logger.debug("ch={}", ch);
+        // logger.debug("ch.pipe={}", ch.pipeline());
         ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG), new AgentForwardHandler());
     }
 

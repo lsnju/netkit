@@ -22,7 +22,6 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.handler.codec.socksx.v5.Socks5InitialRequest;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequest;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthStatus;
-import ls.demon.netkit.util.PipeUtils;
 import ls.demon.netkit.util.SocksServerUtils;
 
 /**
@@ -47,10 +46,10 @@ public class AgentSocksHandler extends SimpleChannelInboundHandler<SocksMessage>
     @Override
     public void channelRead0(ChannelHandlerContext ctx,
                              SocksMessage socksRequest) throws Exception {
-        logger.info("{} channelRead0 = {}", ctx, socksRequest);
+        logger.debug("{} channelRead0 = {}", ctx.channel(), socksRequest);
         switch (socksRequest.version()) {
             case SOCKS4a:
-                logger.info("s4:{}", socksRequest);
+                logger.debug("s4:{}", socksRequest);
                 Socks4CommandRequest socksV4CmdRequest = (Socks4CommandRequest) socksRequest;
                 if (socksV4CmdRequest.type() == Socks4CommandType.CONNECT) {
                     ctx.pipeline().addLast(new AgentSocksConnectHandler());
@@ -61,45 +60,46 @@ public class AgentSocksHandler extends SimpleChannelInboundHandler<SocksMessage>
                 }
                 break;
             case SOCKS5:
-                logger.info("s5:{}", socksRequest);
+                logger.debug("s5:{}", socksRequest);
                 if (socksRequest instanceof Socks5InitialRequest) {
-                    logger.info("s5:init {}", ctx.pipeline().hashCode());
+                    logger.debug("s5:init {}", ctx.pipeline().hashCode());
                     // 
-                    PipeUtils.showAll("init-1", ctx.pipeline());
+                    //                    PipeUtils.showAll("init-1", ctx.pipeline());
 
                     // auth support example
                     //ctx.pipeline().addFirst(new Socks5PasswordAuthRequestDecoder());
                     //ctx.write(new DefaultSocks5AuthMethodResponse(Socks5AuthMethod.PASSWORD));
+
                     ctx.pipeline().addFirst(new Socks5CommandRequestDecoder());
                     ctx.write(new DefaultSocks5InitialResponse(Socks5AuthMethod.NO_AUTH));
 
                     // 
-                    PipeUtils.showAll("init-2", ctx.pipeline());
+                    //                    PipeUtils.showAll("init-2", ctx.pipeline());
                 } else if (socksRequest instanceof Socks5PasswordAuthRequest) {
-                    logger.info("s5:auth {}", ctx.pipeline().hashCode());
+                    logger.debug("s5:auth {}", ctx.pipeline().hashCode());
                     // 
-                    PipeUtils.showAll("fffff", ctx.pipeline());
+                    //                    PipeUtils.showAll("fffff", ctx.pipeline());
                     ctx.pipeline().addFirst(new Socks5CommandRequestDecoder());
                     ctx.write(
                         new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS));
 
                     // 
-                    PipeUtils.showAll("fff", ctx.pipeline());
+                    //                    PipeUtils.showAll("fff", ctx.pipeline());
                 } else if (socksRequest instanceof Socks5CommandRequest) {
-                    logger.info("s5:cmd {}", ctx.pipeline().hashCode());
+                    logger.debug("s5:cmd {}", ctx.pipeline().hashCode());
                     // 
-                    PipeUtils.showAll("s5:cmd-0", ctx.pipeline());
+                    //                    PipeUtils.showAll("s5:cmd-0", ctx.pipeline());
                     Socks5CommandRequest socks5CmdRequest = (Socks5CommandRequest) socksRequest;
                     if (socks5CmdRequest.type() == Socks5CommandType.CONNECT) {
                         ctx.pipeline().addLast(new AgentSocksConnectHandler());
                         ctx.pipeline().remove(this);
                         // 
-                        PipeUtils.showAll("s5:cmd-1", ctx.pipeline());
+                        //                        PipeUtils.showAll("s5:cmd-1", ctx.pipeline());
 
                         ctx.fireChannelRead(socksRequest);
 
                         // 
-                        PipeUtils.showAll("s5:cmd-2", ctx.pipeline());
+                        //                        PipeUtils.showAll("s5:cmd-2", ctx.pipeline());
                     } else {
                         ctx.close();
                     }
@@ -115,14 +115,14 @@ public class AgentSocksHandler extends SimpleChannelInboundHandler<SocksMessage>
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
-        logger.info("xx-channelReadComplete");
+        logger.debug("xx-channelReadComplete {}", ctx.channel());
         ctx.flush();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable throwable) {
         //        throwable.printStackTrace();
-        logger.error("", throwable);
+        logger.error("连接异常 {}", ctx.channel());
         SocksServerUtils.closeOnFlush(ctx.channel());
     }
 }

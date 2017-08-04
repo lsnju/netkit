@@ -2,7 +2,7 @@
  * Witontek.com.
  * Copyright (c) 2012-2017 All Rights Reserved.
  */
-package ls.demon.netkit.agent;
+package ls.demon.netkit.agent.common;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,8 +32,6 @@ import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
-import ls.demon.netkit.agent.common.DirectClientHandler;
-import ls.demon.netkit.agent.common.RelayHandler;
 import ls.demon.netkit.agent.socks.AgentSocksHandler;
 import ls.demon.netkit.util.SocksServerUtils;
 
@@ -49,8 +47,6 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
     private static final Logger       logger = LoggerFactory.getLogger(AgentForwardHandler.class);
 
     private final Socks5ServerEncoder socks5encoder;
-
-    private final Bootstrap           b      = new Bootstrap();
 
     /**
      * 
@@ -109,6 +105,7 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
         if (line == null) {
             return;
         }
+        logger.info("{}", line);
 
         String[] items = StringUtils.split(line, ' ');
         if (items.length != 3) {
@@ -148,7 +145,7 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             public void operationComplete(Future<Channel> future) throws Exception {
                 final Channel outboundChannel = future.getNow();
                 if (future.isSuccess()) {
-                    logger.info("http代理外部连接已建立 {}", outboundChannel);
+                    logger.info("https代理外部连接已建立 {}", outboundChannel);
 
                     ChannelFuture responseFuture = ctx.channel().writeAndFlush(getConnectOk());
                     responseFuture.addListener(new ChannelFutureListener() {
@@ -160,13 +157,14 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
                         }
                     });
                 } else {
-                    logger.info("http代理外部连接已建立失败 {}", outboundChannel);
+                    logger.info("https代理外部连接已建立失败 {}", outboundChannel);
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
 
             }
         });
 
+        Bootstrap b = new Bootstrap();
         final Channel inboundChannel = ctx.channel();
         b.group(inboundChannel.eventLoop()).channel(NioSocketChannel.class)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
@@ -177,10 +175,10 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // Connection established use handler provided results
-                    logger.info("http代理外部连接已建立 {}", future.channel());
+                    logger.info("https代理外部连接已建立 {}", future.channel());
                 } else {
                     // Close the connection if the connection attempt has failed.
-                    logger.info("http代理外部连接已建立失败 {}", future.channel());
+                    logger.info("https代理外部连接已建立失败 {}", future.channel());
                     SocksServerUtils.closeOnFlush(ctx.channel());
                 }
             }
@@ -225,6 +223,7 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
             }
         });
 
+        Bootstrap b = new Bootstrap();
         final Channel inboundChannel = ctx.channel();
         b.group(inboundChannel.eventLoop()).channel(NioSocketChannel.class)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
@@ -252,10 +251,13 @@ public class AgentForwardHandler extends ByteToMessageDecoder {
         for (int i = in.readerIndex(); i < total; i++) {
             byte value = in.getByte(i);
             char nextByte = (char) (value & 0xFF);
-            buff.append(nextByte);
+            if (nextByte == HttpConstants.CR) {
+                return buff.toString();
+            }
             if (nextByte == HttpConstants.LF) {
                 return buff.toString();
             }
+            buff.append(nextByte);
             if (buff.length() > 4096) {
                 logger.warn("header length over 4k");
                 return "error";

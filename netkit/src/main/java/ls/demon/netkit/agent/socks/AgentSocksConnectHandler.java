@@ -39,7 +39,6 @@ import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import ls.demon.netkit.agent.common.DirectClientHandler;
 import ls.demon.netkit.agent.common.RelayHandler;
-import ls.demon.netkit.util.PipeUtils;
 import ls.demon.netkit.util.SocksServerUtils;
 
 @ChannelHandler.Sharable
@@ -55,7 +54,7 @@ public final class AgentSocksConnectHandler extends SimpleChannelInboundHandler<
     public void channelRead0(final ChannelHandlerContext ctx,
                              final SocksMessage message) throws Exception {
 
-        logger.info("channelRead0 = {}", message);
+        logger.debug("channelRead0 = {}", message);
         if (message instanceof Socks4CommandRequest) {
             final Socks4CommandRequest request = (Socks4CommandRequest) message;
             Promise<Channel> promise = ctx.executor().newPromise();
@@ -103,10 +102,8 @@ public final class AgentSocksConnectHandler extends SimpleChannelInboundHandler<
                     }
                 });
         } else if (message instanceof Socks5CommandRequest) {
-            logger.info("s5:cmd_req");
-
-            // 
-            PipeUtils.showAll("s5:cmd_req", ctx.pipeline());
+            //            logger.info("s5:cmd_req");
+            //            PipeUtils.showAll("s5:cmd_req", ctx.pipeline());
 
             final Socks5CommandRequest request = (Socks5CommandRequest) message;
             Promise<Channel> promise = ctx.executor().newPromise();
@@ -115,7 +112,6 @@ public final class AgentSocksConnectHandler extends SimpleChannelInboundHandler<
                 public void operationComplete(final Future<Channel> future) throws Exception {
                     final Channel outboundChannel = future.getNow();
                     if (future.isSuccess()) {
-                        logger.info("write conn success");
                         ChannelFuture responseFuture = ctx.channel().writeAndFlush(
                             new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS,
                                 request.dstAddrType(), request.dstAddr(), request.dstPort()));
@@ -123,16 +119,13 @@ public final class AgentSocksConnectHandler extends SimpleChannelInboundHandler<
                         responseFuture.addListener(new ChannelFutureListener() {
                             @Override
                             public void operationComplete(ChannelFuture channelFuture) {
-                                logger.info("set channel to relayHander {}",
-                                    ctx.pipeline().hashCode());
-                                // 
-                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
+                                //                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
 
                                 ctx.pipeline().remove(AgentSocksConnectHandler.this);
                                 outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
                                 ctx.pipeline().addLast(new RelayHandler(outboundChannel));
                                 // 
-                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
+                                //                                PipeUtils.showAll(ctx.name(), ctx.pipeline());
                             }
                         });
                     } else {
