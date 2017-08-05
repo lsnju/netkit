@@ -15,6 +15,11 @@
  */
 package io.netty.example.http.snoop;
 
+import java.net.URI;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManagerFactory;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -31,8 +36,7 @@ import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-
-import java.net.URI;
+import ls.demon.netkit.util.CertUtils;
 
 /**
  * A simple HTTP client that prints out the content of the HTTP response to
@@ -40,12 +44,12 @@ import java.net.URI;
  */
 public final class HttpSnoopClient {
 
-    static final String URL = System.getProperty("url", "http://127.0.0.1:8080/");
+    static final String URL = System.getProperty("url", "https://127.0.0.1:8080/");
 
     public static void main(String[] args) throws Exception {
         URI uri = new URI(URL);
-        String scheme = uri.getScheme() == null? "http" : uri.getScheme();
-        String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
+        String scheme = uri.getScheme() == null ? "http" : uri.getScheme();
+        String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
         int port = uri.getPort();
         if (port == -1) {
             if ("http".equalsIgnoreCase(scheme)) {
@@ -62,9 +66,19 @@ public final class HttpSnoopClient {
 
         // Configure SSL context if necessary.
         final boolean ssl = "https".equalsIgnoreCase(scheme);
-        final SslContext sslCtx;
+        SslContext sslCtx;
         if (ssl) {
-            sslCtx = SslContextBuilder.forClient()
+            //            sslCtx = SslContextBuilder.forClient()
+            //                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+
+            String keyFile = "D:/TEMP/certs/client/client.p12";
+            String keyStorePwd = "123456";
+            KeyStore ks = CertUtils.getKeyInfo(keyFile, keyStorePwd, "PKCS12");
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, keyStorePwd.toCharArray());
+
+            sslCtx = SslContextBuilder.forClient().keyManager(kmf)
                 .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
         } else {
             sslCtx = null;
@@ -74,26 +88,22 @@ public final class HttpSnoopClient {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
-            b.group(group)
-             .channel(NioSocketChannel.class)
-             .handler(new HttpSnoopClientInitializer(sslCtx));
+            b.group(group).channel(NioSocketChannel.class)
+                .handler(new HttpSnoopClientInitializer(sslCtx));
 
             // Make the connection attempt.
             Channel ch = b.connect(host, port).sync().channel();
 
             // Prepare the HTTP request.
-            HttpRequest request = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+            HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+                uri.getRawPath());
             request.headers().set(HttpHeaderNames.HOST, host);
             request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
             request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
 
             // Set some example cookies.
-            request.headers().set(
-                    HttpHeaderNames.COOKIE,
-                    ClientCookieEncoder.STRICT.encode(
-                            new DefaultCookie("my-cookie", "foo"),
-                            new DefaultCookie("another-cookie", "bar")));
+            request.headers().set(HttpHeaderNames.COOKIE, ClientCookieEncoder.STRICT.encode(
+                new DefaultCookie("my-cookie", "foo"), new DefaultCookie("another-cookie", "bar")));
 
             // Send the HTTP request.
             ch.writeAndFlush(request);
