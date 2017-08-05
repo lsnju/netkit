@@ -55,7 +55,7 @@ public final class HttpSnoopServer {
         if (sslCtx == null) {
             String keyFile = "D:/TEMP/certs/server/server.keystore";
             String keyStorePwd = "123456";
-            KeyStore ks = CertUtils.getKeyInfo(keyFile, keyStorePwd, "JKS");
+            KeyStore ks = CertUtils.getKeyInfo(keyFile, "JKS", keyStorePwd);
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ks, keyStorePwd.toCharArray());

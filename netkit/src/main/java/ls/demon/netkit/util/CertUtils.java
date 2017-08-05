@@ -82,11 +82,11 @@ public class CertUtils {
     // =======================================================================
 
     public static PrivateKey getPrivateKey(String pfxkeyfile, String keypwd) {
-        return getPrivateKey(pfxkeyfile, keypwd, PKCS12);
+        return getPrivateKey(pfxkeyfile, PKCS12, keypwd);
     }
 
-    public static PrivateKey getPrivateKey(String pfxkeyfile, String keypwd, String type) {
-        KeyStore ks = getKeyInfo(pfxkeyfile, keypwd, type);
+    public static PrivateKey getPrivateKey(String keyfile, String type, String keypwd) {
+        KeyStore ks = getKeyInfo(keyfile, type, keypwd);
         if (ks == null) {
             return null;
         }
@@ -112,11 +112,11 @@ public class CertUtils {
     // =======================================================================
 
     public static X509Certificate getCert(String pfxkeyfile, String keypwd) {
-        return getCert(pfxkeyfile, keypwd, PKCS12);
+        return getCert(pfxkeyfile, PKCS12, keypwd);
     }
 
-    public static X509Certificate getCert(String pfxkeyfile, String keypwd, String type) {
-        KeyStore ks = getKeyInfo(pfxkeyfile, keypwd, type);
+    public static X509Certificate getCert(String keyFile, String type, String keypwd) {
+        KeyStore ks = getKeyInfo(keyFile, type, keypwd);
         if (ks == null) {
             return null;
         }
@@ -143,13 +143,13 @@ public class CertUtils {
     // =======================================================================
     // =======================================================================
 
-    public static KeyStore getKeyInfo(String pfxkeyfile, String keypwd) {
-        return getKeyInfo(pfxkeyfile, keypwd, PKCS12);
+    public static KeyStore getKeyInfo(String pfxKeyFile, String keypwd) {
+        return getKeyInfo(pfxKeyFile, PKCS12, keypwd);
     }
 
-    public static KeyStore getKeyInfo(String pfxkeyfile, String keypwd, String type) {
-        logger.info("Load RSA CertPath=[{}],Pwd=[{}],type=[{}]", pfxkeyfile, keypwd, type);
-        try (FileInputStream fis = new FileInputStream(pfxkeyfile);) {
+    public static KeyStore getKeyInfo(String keyFile, String type, String keypwd) {
+        logger.info("Load RSA CertPath=[{}],Pwd=[{}],type=[{}]", keyFile, keypwd, type);
+        try (FileInputStream fis = new FileInputStream(keyFile);) {
             KeyStore ks = KeyStore.getInstance(type);
             ks.load(fis, keypwd.toCharArray());
             return ks;

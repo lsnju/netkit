@@ -124,4 +124,9 @@ public class CertTest {
         }
     }
 
+    @Test
+    public void test_xxxx() {
+        logger.info("{}", KeyStore.getDefaultType());
+    }
+
 }

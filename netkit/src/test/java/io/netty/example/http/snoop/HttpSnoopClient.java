@@ -73,7 +73,7 @@ public final class HttpSnoopClient {
 
             String keyFile = "D:/TEMP/certs/client/client.p12";
             String keyStorePwd = "123456";
-            KeyStore ks = CertUtils.getKeyInfo(keyFile, keyStorePwd, "PKCS12");
+            KeyStore ks = CertUtils.getKeyInfo(keyFile, "PKCS12", keyStorePwd);
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ks, keyStorePwd.toCharArray());
