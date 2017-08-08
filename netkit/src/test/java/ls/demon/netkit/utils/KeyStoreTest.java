@@ -83,4 +83,13 @@ public class KeyStoreTest {
             logger.error("", e);
         }
     }
+
+    @Test
+    public void test_create_cer() {
+        try {
+            // CertAndKeyGen certGen = null;
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+    }
 }

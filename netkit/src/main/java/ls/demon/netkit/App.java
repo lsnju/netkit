@@ -1,5 +1,6 @@
 package ls.demon.netkit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,13 @@ public class App {
         }
 
         System.out.println("Hello World!");
+        logger.info("{}", App.class.getResource(""));
+        logger.info("{}", App.class.getResource("/"));
+        logger.info("xxxxxxxxxx");
+        logger.info("{}", String.class.getResource("/"));
+        logger.info("{}", StringUtils.class.getResource("/"));
+        logger.info("xxxxxxxxxx");
+        logger.info("{}", Thread.currentThread().getContextClassLoader().getResource(""));
 
         if (logger.isDebugEnabled()) {
             logger.debug("main(String[]) - end"); //$NON-NLS-1$

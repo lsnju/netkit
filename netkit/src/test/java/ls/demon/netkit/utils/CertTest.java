@@ -9,8 +9,13 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Enumeration;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
@@ -127,6 +132,14 @@ public class CertTest {
     @Test
     public void test_xxxx() {
         logger.info("{}", KeyStore.getDefaultType());
+        logger.info("{}", TrustManagerFactory.getDefaultAlgorithm());
+        logger.info("{}", KeyManagerFactory.getDefaultAlgorithm());
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            logger.info("{}", cf);
+        } catch (CertificateException e) {
+            logger.error("", e);
+        }
     }
 
 }
