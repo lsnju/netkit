@@ -137,7 +137,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
                 }
             }
         });
-
+        logger.info("httpsProxy end {}:{} {}", host, port, ctx.channel());
     }
 
     /**
@@ -211,6 +211,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<Object> {
                 }
             }
         });
+
+        logger.info("httpProxy end {}:{} {}", host, port, ctx.channel());
     }
 
 }

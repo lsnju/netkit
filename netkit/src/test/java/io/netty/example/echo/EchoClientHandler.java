@@ -15,6 +15,9 @@
  */
 package io.netty.example.echo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,8 +29,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * the server.
  */
 public class EchoClientHandler extends ChannelInboundHandlerAdapter {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(EchoClientHandler.class);
 
-    private final ByteBuf firstMessage;
+    private final ByteBuf       firstMessage;
 
     /**
      * Creates a client-side handler.
@@ -41,16 +48,19 @@ public class EchoClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        logger.info("channelActive {}", ctx.channel());
         ctx.writeAndFlush(firstMessage);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        logger.info("channelRead {} {}", ctx.channel(), msg);
         ctx.write(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
+        logger.info("channelReadComplete {}", ctx.channel());
         ctx.flush();
     }
 

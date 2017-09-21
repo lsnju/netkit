@@ -15,6 +15,9 @@
  */
 package io.netty.example.echo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -24,14 +27,20 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  */
 @Sharable
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
+    /**
+    * Logger for this class
+    */
+    private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        logger.info("read {} {}", ctx.channel(), msg);
         ctx.write(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
+        logger.info("channelReadComplete {} ", ctx.channel());
         ctx.flush();
     }
 

@@ -34,7 +34,7 @@ public class ProxyClientTest {
     private static final Logger logger = LoggerFactory.getLogger(ProxyClientTest.class);
 
     private String              host   = "127.0.0.1";
-    private String              port   = "8888";
+    private String              port   = "1088";
 
     @Test
     public void test_http_proxy() {
